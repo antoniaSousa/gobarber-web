@@ -1,21 +1,32 @@
 
-import React, { useCallback, useRef, useContext} from  'react';
+import React, { useCallback, useRef} from  'react';
 import logoImg from '../../assets/logo.svg';
 import {FiArrowLeft, FiMail, FiUser,FiLock} from 'react-icons/fi';
 import {FormHandles} from '@unform/core';
 import {Form} from '@unform/web';
 import * as Yup from 'yup';
-import  { AuthContext } from '../../hooks/auth';
+import  {Link, useHistory} from 'react-router-dom';
+
+import api from '../../services/api';
+import { useToast } from '../../hooks/toast';
 import getValidationErrros from '../../utils/getValidationErrors';
 
 import Input from '../../components/input';
 import Button from '../../components/Button';
 
-import { Container, Content, Background } from './styles';
+import { Container, Content, Background, AnimationContainer } from './styles';
+
+interface SignUpFormDta {
+    name: string;
+    email: string;
+    password: string;
+}
 
 
 const SignUp: React.FC = () =>{
    const formRef = useRef<FormHandles>(null);
+   const { addToast } = useToast();
+   const history = useHistory();
 
 
 
@@ -29,21 +40,45 @@ const SignUp: React.FC = () =>{
             .email('Digite um e-mail válido'),
             password: Yup.string().min(6, 'Mínimo 6 dígitos'),
         });
+
         await schema.validate(data, {
             abortEarly: false,
         });
 
+        await api.post('/users', data);
+
+        history.push('/');
+
+        addToast({
+            type: 'success',
+            title: ' Cadastro realizado com sucesso!',
+            description: 'Você já pode fazer seu logon no GoBarber'
+        })
+
     }catch (err){
 
-        const errors = getValidationErrros(err);
-        formRef.current?.setErrors(errors);
+
+        if (err instanceof Yup.ValidationError){
+            const errors = getValidationErrros(err);
+
+            formRef.current?.setErrors(errors);
+            return;
+
+
+        }
+        addToast({
+            type: 'error',
+            title: 'Erro no cadastro',
+            description: 'Ocorreu um erro ao fazer o cadastro, tente novamente.'
+        })
     }
-    }, [],);
+    }, [addToast, history],);
 
     return (
         <Container>
           <Background />
         <Content>
+            <AnimationContainer>
             <img src={logoImg} alt="GoBarber"/>
 
             <Form ref={formRef} onSubmit={handleSubmit}>
@@ -58,10 +93,11 @@ const SignUp: React.FC = () =>{
                 <Button type="submit">Cadastrar</Button>
 
             </Form>
-            <a href="login">
+            <Link to="/">
                     <FiArrowLeft />
                     Voltar para logon
-                </a>
+                </Link>
+                </AnimationContainer>
         </Content>
 
 
