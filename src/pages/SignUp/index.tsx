@@ -5,7 +5,7 @@ import {FiArrowLeft, FiMail, FiUser,FiLock} from 'react-icons/fi';
 import {FormHandles} from '@unform/core';
 import {Form} from '@unform/web';
 import * as Yup from 'yup';
-import  { AuthContext } from '../../hooks/AuthContex';
+import  { AuthContext } from '../../hooks/auth';
 import getValidationErrros from '../../utils/getValidationErrors';
 
 import Input from '../../components/input';
